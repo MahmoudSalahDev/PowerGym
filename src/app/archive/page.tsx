@@ -48,7 +48,9 @@ export default function Archive() {
     // }
 
     function detectArchiveLimit() {
-        if (archiveList.length > 300) {
+        // console.log(archiveList?.length);
+        
+        if (archiveList?.length > 300) {
             Swal.fire({
                 title: "Archive list is over 300!",
                 text: "Please Export and clear the Archive",

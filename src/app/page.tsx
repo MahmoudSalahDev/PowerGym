@@ -118,7 +118,7 @@ export default function Home() {
   }, [memberList]);
 
 
-  
+
 
   function detectMethod(values: Member, formikHelpers: FormikHelpers<Member>) {
     if (isUpdate) {
@@ -245,7 +245,7 @@ export default function Home() {
     const docDefinition = (
       <Document>
         <Page style={styles.page}>
-          <Text style={styles.header}>أعضاء الأرشيف</Text>
+          <Text style={styles.header}>المشتركين</Text>
 
           {/* Table header */}
           <View style={styles.tableRow}>
@@ -322,6 +322,7 @@ export default function Home() {
   // end export//////////////////
   return (
     <>
+      
       <section className="">
         <div className="container">
           <form onSubmit={formik.handleSubmit} className="mt-4 p-3 backdrop-blur-sm rounded-md overflow-hidden border-[2px] border-solid border-white">
