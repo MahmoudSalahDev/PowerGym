@@ -5,6 +5,9 @@ import { ChangeEvent, useEffect, useState } from "react";
 import { boolean, object, string } from "yup";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
+import { Document, Page, Text, StyleSheet, pdf, Font, View } from '@react-pdf/renderer';
+
+
 
 export type Member = {
   name: string,
@@ -37,7 +40,6 @@ const initialValues: Member = {
 
 
 
-// let memberList: Member[] = [];
 
 
 let archiveList: Member[] = [];
@@ -45,7 +47,6 @@ let archiveList: Member[] = [];
 
 export default function Home() {
   const [memberList, setmemberList] = useState<Member[]>([])
-  // const [archiveList, setarchiveList] = useState<Member[]>([])
   const [isUpdate, setisUpdate] = useState(false)
   const [isEditing, setIsEditing] = useState(false);
   const [inexUpadte, setinexUpadte] = useState(0)
@@ -62,7 +63,7 @@ export default function Home() {
     const archiveData = await get("archive")
     if (archiveData !== undefined) {
       // console.log(archiveData);
-      
+
       archiveList = archiveData
       // console.log(archiveList);
     }
@@ -115,6 +116,9 @@ export default function Home() {
     // console.log(memberList); // Now this will show the correct updated state
     autoRemoveExpired()
   }, [memberList]);
+
+
+  
 
   function detectMethod(values: Member, formikHelpers: FormikHelpers<Member>) {
     if (isUpdate) {
@@ -188,13 +192,19 @@ export default function Home() {
     onSubmit: detectMethod
   });
 
+  // start search //////////////
+
+
   const [search, setsearch] = useState('')
 
   function searchFN(e: ChangeEvent<HTMLInputElement>) {
-    // console.log(e.target.value);
     setsearch(e.target.value.toLowerCase())
-
   }
+
+  // end search //////////////
+
+
+  // start adding days //////////////
 
   const [addDays, setaddDays] = useState<number | "">(""); // Allow empty string for clearing
 
@@ -222,6 +232,94 @@ export default function Home() {
       toast.error("password is incorrect!")
     }
   }
+
+  // end adding days //////////////
+
+  // start Export ////////////
+  // Register the Arabic Font
+  Font.register({
+    family: 'Cairo',
+    src: '/cairo.ttf', // Add your font file in the public/fonts folder
+  });
+  const exportToPDF = () => {
+    const docDefinition = (
+      <Document>
+        <Page style={styles.page}>
+          <Text style={styles.header}>أعضاء الأرشيف</Text>
+
+          {/* Table header */}
+          <View style={styles.tableRow}>
+            <Text style={styles.tableHeader}>جروب</Text>
+            <Text style={styles.tableHeader}>كارت</Text>
+            <Text style={styles.tableHeader}>الهاتف</Text>
+            <Text style={styles.tableHeader}>ساونا</Text>
+            <Text style={styles.tableHeader}>كارديو</Text>
+            <Text style={styles.tableHeader}>جيم</Text>
+            <Text style={styles.tableHeader}>الملاحظات</Text>
+            <Text style={styles.tableHeader}>السعر</Text>
+            <Text style={styles.tableHeader}>الانتهاء</Text>
+            <Text style={styles.tableHeader}>الاشتراك</Text>
+            <Text style={styles.tableHeader}>الاسم</Text>
+          </View>
+
+          {/* Table content */}
+          {memberList.map((member, index) => (
+            <View style={styles.tableRow} key={index}>
+              <Text style={styles.tableCell}>{member.group == true ? "نعم" : ""}</Text>
+              <Text style={styles.tableCell}>{member.card == true ? "نعم" : ""}</Text>
+              <Text style={styles.tableCell}>{member.phone}</Text>
+              <Text style={styles.tableCell}>{member.steam}</Text>
+              <Text style={styles.tableCell}>{member.cardio == true ? "نعم" : ""}</Text>
+              <Text style={styles.tableCell}>{member.gym == true ? "نعم" : ""}</Text>
+              <Text style={styles.tableCell}>{member.notes}</Text>
+              <Text style={styles.tableCell}>{member.price}</Text>
+              <Text style={styles.tableCell}>{member.expire}</Text>
+              <Text style={styles.tableCell}>{member.date}</Text>
+              <Text style={styles.tableCell}>{member.name}</Text>
+            </View>
+          ))}
+        </Page>
+      </Document>
+    );
+
+    pdf(docDefinition).toBlob().then((blob) => {
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'المشتركين.pdf';
+      link.click();
+    });
+  };
+  const styles = StyleSheet.create({
+    page: {
+      padding: 20,
+      fontSize: 8,
+      fontFamily: 'Cairo', // Use the registered Arabic font
+    },
+    header: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: 10,
+    },
+    tableRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      borderBottom: 1,
+      borderColor: '#ddd',
+      padding: 5,
+    },
+    tableHeader: {
+      fontWeight: 'bold',
+      textAlign: 'center',
+      width: '16%', // Each column width
+    },
+    tableCell: {
+      textAlign: 'center',
+      width: '16%', // Each column width
+    },
+  });
+
+  // end export//////////////////
   return (
     <>
       <section className="">
@@ -314,13 +412,14 @@ export default function Home() {
       <section className="mt-5">
         <div className="container">
           <div className="flex flex-col md:flex-row justify-between gap-2">
-            <div className="order-2 md:order-1 relative z-0 w-full max-w-[300px] mb-5 group">
+            <div className="order-3 md:order-1 relative z-0 w-full max-w-[300px] mb-5 group">
               <input type="text" name="search" id="search"
                 onChange={(e) => { searchFN(e) }}
                 className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white   focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
               <label htmlFor="search" className="peer-focus:font-medium absolute text-sm text-white  duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Search By Name or Phone</label>
             </div>
-            <div className="order-1 md:order-2 relative z-0 w-full max-w-[300px] mb-5 group">
+            <button type="button" onClick={exportToPDF} className="order-[2] text-white bg-gradient-to-r from-cyan-400 via-cyan-500 to-cyan-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Export</button>
+            <div className="order-1 md:order-3 relative z-0 w-full max-w-[300px] mb-5 group">
               <input
                 type="number"
                 name="addDayes"
@@ -489,8 +588,8 @@ export default function Home() {
                       }} className="fa-regular fa-pen-to-square text-[20px] hover:text-[yellow] cursor-pointer"></i></span>
                       {isEditing == true ? "" : <><span ><i onClick={() => {
                         const updatedList = [...memberList];
-                        console.log(member);
-                        console.log(archiveList);
+                        // console.log(member);
+                        // console.log(archiveList);
                         archiveList.unshift(member)
                         set("archive", archiveList); // Save to IndexedDB
                         updatedList.splice(index, 1);
