@@ -4,7 +4,6 @@ import "./globals.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import Navbar from "./_components/navbar/page";
 import { Toaster } from "react-hot-toast";
-import Head from "next/head";
 
 
 const geistSans = Geist({
